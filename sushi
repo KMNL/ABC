@@ -1,0 +1,38 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main(){
+  int N, K,sum = 0,take;
+  cin >> N >> K;
+  vector<pair<int,int>> td(N);
+  set<int>	key;
+  set<int> neta;
+  
+  for(int i = 0; i< N; i++) cin >> td[i].second >> td[i].first;
+  sort(td.rbegin(),td.rend());
+  for(int i = 0; i < K;i++){
+    sum += td[i].first;
+    key.insert(i);		//place that the pair in the sum
+    neta.insert(td[i].second);	//kind that being eaten
+  }
+  int n = neta.size();
+  sum += n*n;
+  for(int i = K; i < N; i++){		//All explore
+    if(neta.count(td[i].second)) continue;	// if have eaten the same "Neta",skip it
+    int res = sum;							// cuz must lower or equal than now's
+    for(int j = 0; j < N; j++){		//Explore the nums that is in the sum
+       take = j;
+      if(key.count(take)){	// check if it is in the sum
+        res+= 2*n+1+td[i].first-td[j].first;	// 2n+1 = -(n^2)+(n+1)^2
+        res = max(res, sum);
+      }
+    }
+    if(res != sum)	{
+      key.insert(take);
+      key.erase(i);
+      n++;
+    }
+    sum = res;
+  }
+  cout << sum;
+}
