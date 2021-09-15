@@ -2,37 +2,62 @@
 using namespace std;
 
 int main(){
-  int N, K,sum = 0,take;
+  int N, K;                 
+  long long sum = 0;
   cin >> N >> K;
   vector<pair<int,int>> td(N);
-  set<int>	key;
-  set<int> neta;
-  
-  for(int i = 0; i< N; i++) cin >> td[i].second >> td[i].first;
+  set<int>	key;                      // array that store the sushi number
+  set<int> kind;                      // array that store the sushi kind
+
+  for(int i = 0; i< N; i++) {
+      cin >> td[i].second >> td[i].first;
+      kind.insert(td[i].second);      // calculate the summary these of kind 
+  }
+
   sort(td.rbegin(),td.rend());
-  for(int i = 0; i < K;i++){
-    sum += td[i].first;
-    key.insert(i);		//place that the pair in the sum
-    neta.insert(td[i].second);	//kind that being eaten
-  }
-  int n = neta.size();
-  sum += n*n;
-  for(int i = K; i < N; i++){		//All explore
-    if(neta.count(td[i].second)) continue;	// if have eaten the same "Neta",skip it
-    int res = sum;							// cuz must lower or equal than now's
-    for(int j = 0; j < N; j++){		//Explore the nums that is in the sum
-       take = j;
-      if(key.count(take)){	// check if it is in the sum
-        res+= 2*n+1+td[i].first-td[j].first;	// 2n+1 = -(n^2)+(n+1)^2
-        res = max(res, sum);
+  int n = kind.size(),m = K;
+  kind.clear();
+
+  for(int i = 0; i < N;i++){          // first, full sum with different kinds of sushi that owns the most deliciousness
+      if(!kind.count(td[i].second)){
+        sum += td[i].first;
+        kind.insert(td[i].second);
+        key.insert(i);
+        m--;
       }
-    }
-    if(res != sum)	{
-      key.insert(take);
-      key.erase(i);
-      n++;
-    }
-    sum = res;
+      if(m == 0)    break;
   }
-  cout << sum;
+
+  if (m > 0){                         // if(kind total < K),full sum from the most delicious ones從最有價值的開始填充
+      for(int i = 0; i < N; i++){
+          if( m == 0)   break;
+          if (!key.count(i)){
+              sum+= td[i].first;
+              key.insert(i);
+              m--;
+          }
+      }
+  }
+	sum+= n*n;
+  
+  for( int i = 0; i < N; i++){			// search all sushi 
+      for(int j = 0; j < N; j++){		// search sushi in the sum array
+            long long res = sum;
+        if(!key.count(i) && key.count(j)){                                      // if( i != j ) && same kinds of sushi already in the sum array and changing with it
+          if(!kind.count(td[i].second) && kind.count(td[j].second)){            // just to compare past one's summary with changed one's summary
+              res += td[i].first - td[j].first;
+        	}else if(kind.count(td[i].second) && kind.count(td[j].second)){       // if( i != j ) && same kinds of sushi already in the sum array but changing it with another
+            res += -(2*n-1)-td[j].first+td[i].first;                            // to compare the sum betweem past one's summary and now one's summary
+          }
+        }
+
+        if(res > sum){                // if it becomes bigger after changed contents
+          key.erase(j);               // swap their position(1 drop out and 1 enter) and resize the n;
+          key.insert(i);
+          n = kind.size();
+        }
+        sum = max(res, sum);          // get the maximum
+      }
+  }
+  cout << sum << endl;
 }
